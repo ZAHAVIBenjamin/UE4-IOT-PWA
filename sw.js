@@ -1,29 +1,30 @@
-const STATIC_CACHE_NAME = "appshell-v9";
-const DYNAMIC_CACHE_NAME = "dynamic-v2";
+// On repart à zéro pour le projet final !
+const STATIC_CACHE_NAME = "appshell-v1";
+const DYNAMIC_CACHE_NAME = "dynamic-v1";
+
+// Liste des fichiers indispensables pour que l'app s'affiche sans internet
 const ASSETS_TO_CACHE = [
-  "/", // La racine (très important !)
-  "/index.html", // Le fichier HTML
-  "/css/style.css", // Le style
-  "/js/app.js", // Le script principal
-  "/image/pngimg512x512.png",
+  "/",
+  "/index.html",
+  "/css/style.css",
+  "/js/app.js",
+  "/image/web-app-manifest-192x192.png",
   "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap",
   "/offline.html",
 ];
 
 self.addEventListener("install", (event) => {
-  console.log("[SW] Installation et mise en cache de l'App Shell");
+  console.log("[SW] Installation et mise en cache de l'App Shell (v1)");
   event.waitUntil(
     caches
       .open(STATIC_CACHE_NAME)
       .then((cache) => {
-        console.log("[SW] Mise en cache des fichiers...");
+        console.log("[SW] Mise en cache des fichiers statiques...");
         return cache.addAll(ASSETS_TO_CACHE);
       })
       .catch((error) => {
         console.error("[SW] Echec du pre-caching :", error);
       }),
-    // ATTENTION : Pour ce TP, nous ne mettons PAS de self.skipWaiting() ici !
-    // Nous voulons observer le comportement d'attente ("waiting") par défaut du navigateur.
   );
 });
 
@@ -35,13 +36,17 @@ self.addEventListener("message", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
-  // A. Stratégie NETWORK FIRST pour l'API externe
-  if (url.origin === "https://api.goodbarber.net") {
+
+  // Stratégie NETWORK FIRST
+
+  if (
+    url.origin.includes("aflokkat-projet.fr") &&
+    url.pathname.includes(".php")
+  ) {
     event.respondWith(
       fetch(event.request)
         .then((networkResponse) => {
-          // 1. Si le réseau répond, on met à jour le cache
-          // Attention : Une réponse ne se lit qu'une fois, il faut la cloner
+          // 1. Si internet marche, on met à jour le cache dynamique
           const clonedResponse = networkResponse.clone();
           caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
             cache.put(event.request, clonedResponse);
@@ -49,14 +54,17 @@ self.addEventListener("fetch", (event) => {
           return networkResponse;
         })
         .catch((err) => {
-          // 2. Si le réseau échoue, on retourne la version en cache
+          // 2. Si on est hors ligne, on affiche les dernières données connues !
+          console.log(
+            "[SW] Mode hors ligne : récupération des données API en cache",
+          );
           return caches.match(event.request);
         }),
     );
   }
-  // B. Images : Stale-While-Revalidate — détaillé à l'étape 1 bis
+
+  // Stratégie STALE-WHILE-REVALIDATE : Pour les images
   else if (event.request.destination === "image") {
-    // Stale-while-revalidate : réponse cache tout de suite, mise à jour en arrière-plan
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         const fetchAndCache = fetch(event.request, { mode: "no-cors" }).then(
@@ -69,33 +77,29 @@ self.addEventListener("fetch", (event) => {
           },
         );
         if (cachedResponse) {
-          console.log("[SW] Image SWR — cache (stale), revalidate en fond");
           return cachedResponse;
         }
         return fetchAndCache.catch(() => {
           console.log("[SW] Image — pas de cache, réseau indisponible");
-          // (Optionnel) retourner une image placeholder
         });
       }),
     );
   }
-  // C. Stratégie CACHE FIRST (App Shell & Assets) - Code du TP3 + fallback
+
+  // Stratégie CACHE FIRST : Pour l'App Shell (HTML, CSS, JS)
   else {
     event.respondWith(
       caches.match(event.request).then((response) => {
+        // 1. On cherche d'abord dans le cache statique
         if (response) {
           return response;
         }
-        // Si pas dans le cache, on tente le réseau
+        // 2. Sinon on tente de le télécharger
         return fetch(event.request).catch((error) => {
-          // Si le réseau échoue (Offline)
-          // On vérifie si la requête demandait une page HTML
+          // 3. Si on est hors ligne ET qu'on cherche une page web, on affiche offline.html
           if (event.request.headers.get("accept").includes("text/html")) {
-            // On retourne la page offline du cache statique
             return caches.match("/offline.html");
           }
-          // (Optionnel) Ici on pourrait retourner une image placeholder par défaut
-          // si c'était une image qui échouait.
         });
       }),
     );
@@ -103,8 +107,9 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  console.log("[SW] Activation et nettoyage...");
+  console.log("[SW] Activation et nettoyage des vieux caches...");
   const cacheWhitelist = [STATIC_CACHE_NAME, DYNAMIC_CACHE_NAME];
+
   event.waitUntil(
     caches
       .keys()
@@ -112,13 +117,12 @@ self.addEventListener("activate", (event) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
             if (cacheWhitelist.indexOf(cacheName) === -1) {
-              console.log("[SW] Suppression du vieux cache :", cacheName);
+              console.log("[SW] Suppression de l'ancien cache :", cacheName);
               return caches.delete(cacheName);
             }
           }),
         );
       })
-      // Prise de contrôle après nettoyage (évite une race condition avec d’anciennes réponses)
       .then(() => self.clients.claim()),
   );
 });

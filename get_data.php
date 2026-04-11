@@ -2,10 +2,7 @@
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
-$host = "localhost";
-$user = "roni4736_zahavi_benjamin";
-$pass = "(wQFU7QVQ!B2";
-$db   = "roni4736_zahavi_benjamin_ue4";
+require_once 'db.php';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $pass);
