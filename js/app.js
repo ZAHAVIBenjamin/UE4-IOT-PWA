@@ -1,9 +1,7 @@
 // GESTION DE LA PWA (Installation et Service Worker)
-
 let invitationInstallation;
 const boutonInstallation = document.getElementById("install-btn");
 
-// Cacher le bouton si l'app est déjà installée ou en mode standalone
 if (
   window.matchMedia("(display-mode: standalone)").matches ||
   window.navigator.standalone === true
@@ -11,7 +9,6 @@ if (
   if (boutonInstallation) boutonInstallation.classList.add("hidden");
 }
 
-// Intercepter la demande d'installation
 window.addEventListener("beforeinstallprompt", (evenement) => {
   evenement.preventDefault();
   invitationInstallation = evenement;
@@ -19,7 +16,6 @@ window.addEventListener("beforeinstallprompt", (evenement) => {
   console.log("[PWA] L'événement beforeinstallprompt a été intercepté.");
 });
 
-// Gérer le clic sur le bouton d'installation
 if (boutonInstallation) {
   boutonInstallation.addEventListener("click", async () => {
     if (!invitationInstallation) return;
@@ -31,12 +27,10 @@ if (boutonInstallation) {
   });
 }
 
-// Message de confirmation d'installation
 window.addEventListener("appinstalled", () => {
   console.log("[PWA] Application installée avec succès !");
 });
 
-// Enregistrement du Service Worker et gestion des mises à jour
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js").then((enregistrement) => {
@@ -81,12 +75,10 @@ function afficherNotificationMiseAJour(worker) {
   );
 }
 
-//  Données
+// --- MODÈLE (Données) ---
 
-// Rôle : Parler avec le serveur et ramener les données brutes
 async function recupererHistoriqueFeux() {
   try {
-    // Attention: Remettre http:// si tu testes en local sans certificat SSL
     const reponse = await fetch(
       "https://zahavi.benjamin-ue4.aflokkat-projet.fr/get_data.php",
     );
@@ -98,36 +90,76 @@ async function recupererHistoriqueFeux() {
   }
 }
 
-// CONTRÔLEUR
+// --- CONTRÔLEUR ---
 
-// Transformer les données brutes en données par jour
 function organiserDonneesParJour(donneesBrutes) {
   const joursGroupes = {};
-
   donneesBrutes.forEach((ligne) => {
     if (ligne.date_enregistrement) {
-      // Séparation de la date ("2026-04-10") et de l'heure ("11:30:23")
       const [date, heure] = ligne.date_enregistrement.split(" ");
-
-      // Initialisation du jour s'il n'existe pas encore
       if (!joursGroupes[date]) {
         joursGroupes[date] = { total: 0, heures: [] };
       }
-
-      // Ajout des informations
       joursGroupes[date].total += 1;
       joursGroupes[date].heures.push(heure);
     }
   });
-
   return joursGroupes;
 }
 
-// VUES
+async function forcerFeuRouge() {
+  try {
+    const reponse = await fetch(
+      "https://zahavi.benjamin-ue4.aflokkat-projet.fr/send_command.php?cmd=R",
+    );
+    const data = await reponse.json();
+    if (data.success) {
+      alert("✅ Ordre 'Forcer le rouge' envoyé avec succès !");
+    }
+  } catch (e) {
+    console.error(e);
+    alert("❌ Commande envoyée (Vérifiez le retour serveur).");
+  }
+}
+window.forcerFeuRouge = forcerFeuRouge;
+
+async function sauvegarderConfig(event) {
+  event.preventDefault();
+
+  const dfrValue = document.getElementById("dfr_input").value;
+  const melodyValue = document.getElementById("melody_input").value;
+  const messageDiv = document.getElementById("config_message");
+
+  messageDiv.innerHTML = "⏳ Envoi en cours...";
+  messageDiv.style.color = "orange";
+
+  try {
+    const reponse = await fetch(
+      "https://zahavi.benjamin-ue4.aflokkat-projet.fr/save_config.php",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `dfr=${dfrValue}&melody=${melodyValue}`,
+      },
+    );
+
+    if (reponse.ok) {
+      messageDiv.innerHTML = "✅ Configuration envoyée au serveur !";
+      messageDiv.style.color = "green";
+    } else {
+      throw new Error("Erreur serveur");
+    }
+  } catch (erreur) {
+    console.error("Erreur Config:", erreur);
+    messageDiv.innerHTML = "❌ Impossible de contacter le serveur.";
+    messageDiv.style.color = "red";
+  }
+}
+
+// --- VUES ---
 
 const zoneContenu = document.getElementById("content");
 
-// Tableau des feux rouges
 function afficherTableauBord(donnees) {
   if (!donnees) {
     zoneContenu.innerHTML =
@@ -135,7 +167,6 @@ function afficherTableauBord(donnees) {
     return;
   }
 
-  // S'il n'y a pas de données du tout
   if (Object.keys(donnees).length === 0) {
     zoneContenu.innerHTML = `
       <h2>Tableau de bord - Feux Rouges 🚦</h2>
@@ -144,7 +175,6 @@ function afficherTableauBord(donnees) {
     return;
   }
 
-  // Création de l'en-tête du tableau
   let codeHTML = `
     <h2>Tableau de bord - Feux Rouges 🚦</h2>
     <p>Historique des derniers feu rouges détectés par le capteur.</p>
@@ -159,7 +189,6 @@ function afficherTableauBord(donnees) {
       <tbody>
   `;
 
-  // Création des lignes du tableau
   for (const [date, infos] of Object.entries(donnees)) {
     const badgesHeures = infos.heures
       .map(
@@ -176,63 +205,65 @@ function afficherTableauBord(donnees) {
       </tr>
     `;
   }
-
   codeHTML += `</tbody></table>`;
-
-  // Injection dans la page
   zoneContenu.innerHTML = codeHTML;
 }
 
-// Afficher la page d'administration
+function afficherConfig() {
+  zoneContenu.innerHTML = `
+    <h2>⚙️ Paramètres du Système</h2>
+    <button onclick="pageAdmin()" style="margin-bottom:20px; padding: 8px 15px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; background: transparent; color: inherit;">🔙 Retour Admin</button>
+    
+    <form id="configForm" style="max-width: 400px; margin: 0 auto; background: #e2e8f0; padding: 20px; border-radius: 8px; color: #0f172a; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        
+        <div style="margin-bottom: 15px;">
+            <label for="dfr_input" style="display:block; margin-bottom:5px; font-weight: bold; color: #0f172a;">Durée du Feu Rouge (en ms) :</label>
+            <input type="number" id="dfr_input" value="5000" min="2000" max="15000" step="1000" required style="width: 120px; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; color: #000; font-weight: bold;">
+        </div>
 
-// Envoyer ordre au serveur
-async function forcerFeuRouge() {
-  try {
-    const reponse = await fetch(
-      "https://zahavi.benjamin-ue4.aflokkat-projet.fr/send_command.php?cmd=R",
-    );
-    const data = await reponse.json();
-    if (data.success) {
-      alert("✅ Ordre 'Forcer le rouge' envoyé avec succès !");
-    }
-  } catch (e) {
-    console.error(e);
-    alert("❌ Commande envoyée (Vérifiez le retour serveur).");
-  }
+        <div style="margin-bottom: 20px;">
+            <label for="melody_input" style="display:block; margin-bottom:5px; font-weight: bold; color: #0f172a;">Choix de la Mélodie :</label>
+            <select id="melody_input" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; color: #000;">
+                <option value="A">Mélodie A (Ode à la Joie)</option>
+                <option value="B">Mélodie B (Alerte Rapide)</option>
+                <option value="C">Mélodie C (Mode Silencieux)</option>
+            </select>
+        </div>
+
+        <button type="submit" style="width: 100%; padding: 12px; background: #1e293b; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Mettre à jour l'Arduino</button>
+    </form>
+    
+    <div id="config_message" style="margin-top: 15px; font-weight: bold; text-align: center;"></div>
+  `;
+
+  document
+    .getElementById("configForm")
+    .addEventListener("submit", sauvegarderConfig);
 }
 
-window.forcerFeuRouge = forcerFeuRouge;
-
 function pageAdmin() {
-  // 1. On injecte le HTML SANS le onclick
   zoneContenu.innerHTML = `
     <h2>ADMINISTRATION ⚙️</h2>
     <p>Gérez les paramètres de votre système Arduino.</p>
     <div class="admin-actions">
       <button id="btn-forcer-rouge">Forcer le Rouge</button>
-      <button id="btn-config">Accès config</button>
-      <button id="btn-diag">Diagnostique</button>
+      <button id="btn-config">Accès config</button> 
     </div>
   `;
 
-  // 2. On lie le bouton à la fonction via un écouteur d'événement
-  const btn = document.getElementById("btn-forcer-rouge");
-  if (btn) {
-    btn.addEventListener("click", forcerFeuRouge);
-  }
-
-  // Bonus : gestion des autres boutons
+  document
+    .getElementById("btn-forcer-rouge")
+    ?.addEventListener("click", forcerFeuRouge);
   document
     .getElementById("btn-config")
-    ?.addEventListener("click", () => alert("Fonctionnalité à venir !"));
+    ?.addEventListener("click", afficherConfig);
   document
     .getElementById("btn-diag")
     ?.addEventListener("click", () => alert("Fonctionnalité à venir !"));
 }
 
-// 5. ROUTAGE ET ORCHESTRATION
+// --- ROUTAGE ET ORCHESTRATION ---
 
-// Le chef d'orchestre de la page d'accueil
 async function pageAccueil() {
   zoneContenu.innerHTML = `
     <h2>Tableau de bord - Feux Rouges 🚦</h2>
@@ -252,7 +283,6 @@ async function pageAccueil() {
   }
 }
 
-// Système de navigation
 const routes = {
   "/": pageAccueil,
   "/ADMINISTRATION": pageAdmin,
