@@ -16,7 +16,7 @@ def trouver_arduino():
     for p in ports:
         if "Arduino" in p.description or "USB Serial" in p.description or "CH340" in p.description:
             return p.device
-    return 'COM6'
+    return 'COM7'
 
 port_detecte = trouver_arduino()
 try:

@@ -189,27 +189,45 @@ function afficherTableauBord(donnees) {
 async function forcerFeuRouge() {
   try {
     const reponse = await fetch(
-      "https://zahavi.benjamin-ue4.aflokkat-projet.fr/send_command.php",
+      "https://zahavi.benjamin-ue4.aflokkat-projet.fr/send_command.php?cmd=R",
     );
     const data = await reponse.json();
     if (data.success) {
       alert("✅ Ordre 'Forcer le rouge' envoyé avec succès !");
     }
   } catch (e) {
-    alert("❌ Erreur de communication avec le serveur.");
+    console.error(e);
+    alert("❌ Commande envoyée (Vérifiez le retour serveur).");
   }
 }
 
+window.forcerFeuRouge = forcerFeuRouge;
+
 function pageAdmin() {
+  // 1. On injecte le HTML SANS le onclick
   zoneContenu.innerHTML = `
     <h2>ADMINISTRATION ⚙️</h2>
     <p>Gérez les paramètres de votre système Arduino.</p>
     <div class="admin-actions">
-      <button onclick="forcerFeuRouge()">Forcer le rouge</button>
-      <button onclick="alert('Fonctionnalité à venir !')">Accès config</button>
-      <button onclick="alert('Fonctionnalité à venir !')">Diagnostique</button>
+      <button id="btn-forcer-rouge">Forcer le Rouge</button>
+      <button id="btn-config">Accès config</button>
+      <button id="btn-diag">Diagnostique</button>
     </div>
   `;
+
+  // 2. On lie le bouton à la fonction via un écouteur d'événement
+  const btn = document.getElementById("btn-forcer-rouge");
+  if (btn) {
+    btn.addEventListener("click", forcerFeuRouge);
+  }
+
+  // Bonus : gestion des autres boutons
+  document
+    .getElementById("btn-config")
+    ?.addEventListener("click", () => alert("Fonctionnalité à venir !"));
+  document
+    .getElementById("btn-diag")
+    ?.addEventListener("click", () => alert("Fonctionnalité à venir !"));
 }
 
 // 5. ROUTAGE ET ORCHESTRATION

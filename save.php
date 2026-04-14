@@ -2,23 +2,23 @@
 require_once 'db.php';
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $pass);
-    
-    // On récupère les données envoyées par Python
+    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8", $user, $pass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
     if (isset($_POST['nbFeuRouge'])) {
         $nb = intval($_POST['nbFeuRouge']);
         
-        // Insertion dans la table feuRouge
-        $sql = "SELECT DATE(date_enregistrement) as jour, COUNT(id) as total_feux 
-            FROM feuRouge 
-            GROUP BY DATE(date_enregistrement) 
-            ORDER BY jour DESC 
-            LIMIT 7";
-        $stmt->execute([$nb]);
+        $sql = "INSERT INTO feuRouge (date_enregistrement) VALUES (NOW())";
+        $stmt = $pdo->prepare($sql);
         
-        echo "Succès : Donnée enregistrée";
+        $stmt->execute();
+        
+        echo "✅ Succès : Feu rouge enregistrée dans la base";
+    } else {
+        echo "⚠️ Erreur : Aucune donnée nbFeuRouge reçue";
     }
+
 } catch (PDOException $e) {
-    echo "Erreur : " . $e->getMessage();
+    echo "❌ Erreur de base de données : " . $e->getMessage();
 }
 ?>

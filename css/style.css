@@ -101,6 +101,7 @@ header {
   padding: 8px 16px;
   border-radius: 8px;
   font-weight: bold;
+  margin-right: 50px;
 }
 
 #update-notification {
