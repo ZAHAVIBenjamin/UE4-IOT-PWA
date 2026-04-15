@@ -1,8 +1,11 @@
-/* --- CONFIGURATION ULTRA DARK --- */
+/* =========================================
+   1. VARIABLES & CONFIGURATION ULTRA DARK
+   ========================================= */
 :root {
   /* Couleurs principales */
-  --primary-color: #bb86fc; /* Un violet néon qui ressort bien sur le noir */
-  --secondary-color: #03dac6;
+  --primary-color: #bb86fc; /* Violet néon */
+  --secondary-color: #03dac6; /* Cyan / Teal */
+  --danger-color: #cf6679; /* Rouge pastel pour l'alerte */
 
   /* Fond et Texte */
   --bg-color: #000000; /* Noir pur (OLED) */
@@ -11,25 +14,58 @@
 
   /* Éléments d'interface */
   --card-bg: #121212; /* Gris très foncé pour les cartes */
+  --input-bg: #1e1e1e;
   --tab-bar-bg: #050505; /* Presque noir pour la nav */
   --border-color: #2d3748; /* Bordures discrètes */
 
+  /* Dimensions */
   --header-height: 60px;
   --nav-height: 70px;
 }
 
-/* On force le dark mode même si le téléphone est en light */
+/* Reset de base Mobile First */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: "Roboto", sans-serif;
   background-color: var(--bg-color);
   color: var(--text-color);
   line-height: 1.6;
   overscroll-behavior-y: none;
-  padding-top: var(--header-height);
-  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
+  padding-top: calc(var(--header-height) + 20px);
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 20px);
 }
 
-/* --- HEADER --- */
+/* =========================================
+   2. STRUCTURE GÉNÉRALE & TYPOGRAPHIE
+   ========================================= */
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 20px;
+  text-align: center; /* Centre le texte globalement */
+}
+
+h1,
+h2,
+h3 {
+  color: var(--text-color);
+  margin-bottom: 10px;
+}
+
+p {
+  color: var(--text-dim);
+  margin-bottom: 25px;
+  font-size: 0.95rem;
+}
+
+/* =========================================
+   3. HEADER & NAVIGATION
+   ========================================= */
 header {
   position: fixed;
   top: 0;
@@ -45,22 +81,6 @@ header {
   padding-top: env(safe-area-inset-top);
 }
 
-/* --- CARTES D'ARTICLES --- */
-.card {
-  background: var(--card-bg);
-  border-radius: 12px;
-  border: 1px solid var(--border-color); /* Petite bordure pour séparer du fond noir */
-  overflow: hidden;
-  transition: transform 0.2s ease;
-}
-
-.card h3 {
-  padding: 15px;
-  color: var(--text-color);
-  font-size: 1.1rem;
-}
-
-/* --- BARRE DE NAVIGATION --- */
 .tab-bar {
   position: fixed;
   bottom: 0;
@@ -78,7 +98,7 @@ header {
 .tab-btn {
   background: none;
   border: none;
-  color: var(--text-dim); /* Texte grisé par défaut */
+  color: var(--text-dim);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -89,41 +109,119 @@ header {
 }
 
 .tab-btn.active {
-  color: var(--primary-color); /* Violet quand actif */
+  color: var(--primary-color);
   font-weight: bold;
 }
 
-/* --- BOUTON INSTALLATION --- */
+/* =========================================
+   4. TABLEAU DE BORD (ACCUEIL)
+   ========================================= */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  overflow: hidden; /* Arrondit les coins du tableau */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  margin-top: 15px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 15px;
+  border-bottom: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.data-table th {
+  background-color: #1a1a1a;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* =========================================
+   5. PAGE ADMINISTRATION (BOUTONS)
+   ========================================= */
+.admin-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  max-width: 350px; /* Sur PC, les boutons ne prendront pas tout l'écran */
+  margin: 0 auto; /* Centre la colonne de boutons */
+}
+
+.admin-actions button {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  padding: 18px 20px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Effet au survol (PC) et au clic (Mobile) */
+.admin-actions button:hover,
+.admin-actions button:active {
+  background-color: var(--primary-color);
+  color: var(--bg-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(187, 134, 252, 0.4);
+}
+
+/* Bouton spécifique pour Forcer le Rouge */
+#btn-forcer-rouge {
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+}
+
+#btn-forcer-rouge:hover,
+#btn-forcer-rouge:active {
+  background-color: var(--danger-color);
+  color: var(--bg-color);
+  box-shadow: 0 4px 15px rgba(207, 102, 121, 0.4);
+}
+
+/* =========================================
+   6. PWA & NOTIFICATIONS
+   ========================================= */
 #install-btn {
   background-color: var(--primary-color);
-  color: #000; /* Texte noir sur bouton violet pour le contraste */
+  color: #000;
   border: none;
   padding: 8px 16px;
   border-radius: 8px;
   font-weight: bold;
-  margin-right: 50px;
 }
 
 #update-notification {
-  /* On le cache visuellement au lieu d'utiliser display: none */
   visibility: hidden;
   opacity: 0;
   transform: translateX(-50%) translateY(20px);
   transition:
     opacity 0.3s ease,
     transform 0.3s ease;
-
-  /* Positionnement fixe en bas au centre */
   position: fixed;
   bottom: calc(var(--nav-height) + 20px + env(safe-area-inset-bottom));
   left: 50%;
-
-  /* Style de la carte */
-  background: #1a1a1a;
+  background: var(--card-bg);
   color: white;
   border: 1px solid var(--primary-color);
   border-radius: 12px;
-  padding: 12px 20px;
+  padding: 15px 20px;
   z-index: 2000;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
   text-align: center;
@@ -131,7 +229,6 @@ header {
   max-width: 400px;
 }
 
-/* La classe qui sera ajoutée par le JavaScript pour l'afficher */
 #update-notification.show {
   visibility: visible;
   opacity: 1;
@@ -147,14 +244,14 @@ header {
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
-  transition: transform 0.1s;
 }
 
-#reload-btn:active {
-  transform: scale(0.95);
-}
 @media all and (display-mode: standalone) {
   #install-btn {
     display: none !important;
   }
+}
+
+.hidden {
+  display: none !important;
 }

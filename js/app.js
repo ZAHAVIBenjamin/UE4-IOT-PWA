@@ -29,6 +29,9 @@ if (boutonInstallation) {
 
 window.addEventListener("appinstalled", () => {
   console.log("[PWA] Application installée avec succès !");
+  if (boutonInstallation) {
+    boutonInstallation.classList.add("hidden");
+  }
 });
 
 if ("serviceWorker" in navigator) {
@@ -298,5 +301,20 @@ window.pageAccueil = pageAccueil;
 window.pageAdmin = pageAdmin;
 
 document.addEventListener("DOMContentLoaded", () => {
-  pageAccueil();
+  const cheminActuel = window.location.pathname;
+
+  if (routes[cheminActuel]) {
+    routes[cheminActuel]();
+  } else {
+    pageAccueil();
+  }
+});
+
+window.addEventListener("popstate", () => {
+  const cheminActuel = window.location.pathname;
+  if (routes[cheminActuel]) {
+    routes[cheminActuel]();
+  } else {
+    pageAccueil();
+  }
 });

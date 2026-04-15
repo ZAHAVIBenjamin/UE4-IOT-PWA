@@ -3,7 +3,7 @@ header("Content-Type: application/json; charset=UTF-8");
 require_once 'db.php';
 
 try {
-    // On cherche le plus vieil ordre "en attente"
+    // Dernier ordre "ATTENTE"
     $stmt = $pdo->query("SELECT id, action FROM commandes WHERE etat = 'ATTENTE' ORDER BY id ASC LIMIT 1");
     $cmd = $stmt->fetch(PDO::FETCH_ASSOC);
     

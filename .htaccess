@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  
+  # Si le fichier demandé n'existe pas physiquement...
+  RewriteCond %{REQUEST_FILENAME} !-f
+  # ... et si le dossier demandé n'existe pas non plus...
+  RewriteCond %{REQUEST_FILENAME} !-d
+  
+  # ... alors on redirige silencieusement vers index.html
+  RewriteRule ^(.*)$ index.html [QSA,L]
+</IfModule>

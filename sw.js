@@ -1,6 +1,5 @@
-// On repart à zéro pour le projet final !
-const STATIC_CACHE_NAME = "appshell-v1";
-const DYNAMIC_CACHE_NAME = "dynamic-v1";
+const STATIC_CACHE_NAME = "appshell-v1.1.3";
+const DYNAMIC_CACHE_NAME = "dynamic-v1.1.3";
 
 // Liste des fichiers indispensables pour que l'app s'affiche sans internet
 const ASSETS_TO_CACHE = [
