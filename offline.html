@@ -2,11 +2,112 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>hors ligne</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>FRIMIRA - Hors Ligne</title>
+
+    <meta name="theme-color" content="#050505" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* Variables reprises de ton thème Ultra Dark */
+      :root {
+        --primary-color: #bb86fc;
+        --danger-color: #cf6679;
+        --bg-color: #000000;
+        --text-color: #ffffff;
+        --text-dim: #a0aec0;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Roboto", sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .offline-icon {
+        font-size: 5rem;
+        margin-bottom: 20px;
+        /* Petite animation de pulsation pour montrer que l'app essaie de chercher du réseau */
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.6;
+          transform: scale(0.95);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      h1 {
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+      }
+
+      p {
+        color: var(--text-dim);
+        font-size: 1rem;
+        line-height: 1.5;
+        max-width: 400px;
+        margin-bottom: 30px;
+      }
+
+      .btn-retry {
+        background-color: transparent;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+        padding: 15px 30px;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .btn-retry:active {
+        background-color: var(--primary-color);
+        color: var(--bg-color);
+        transform: translateY(2px);
+      }
+    </style>
   </head>
   <body>
-    <a href="index.html"></a>
-    <p>Oups, vous êtes hors ligne et cette page n'est pas disponible.....</p>
+    <div class="offline-icon">📡</div>
+
+    <h1>Connexion Perdue</h1>
+    <p>
+      Oups, vous êtes hors ligne.<br />Vérifiez votre connexion internet pour
+      continuer à piloter l'Arduino.
+    </p>
+
+    <button class="btn-retry" onclick="window.location.reload()">
+      Réessayer
+    </button>
   </body>
 </html>

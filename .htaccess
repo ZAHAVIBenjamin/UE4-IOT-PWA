@@ -10,3 +10,9 @@
   # ... alors on redirige silencieusement vers index.html
   RewriteRule ^(.*)$ index.html [QSA,L]
 </IfModule>
+<IfModule mod_expires.c>
+  ExpiresActive On
+  # Mettre en cache les CSS et JS pendant 1 mois
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
